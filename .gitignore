@@ -1,6 +1,7 @@
 build/
 examples/
-wave.wav
 test/build/
 test/results/
 formatted/
+wave.wav
+mix2mono.wav

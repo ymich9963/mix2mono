@@ -34,6 +34,13 @@ int get_options(int* restrict argc, char** restrict argv, mix2mono_config_t* res
             continue;
         }
 
+        if (!(strcmp("-i", argv[i])) || !(strcmp("--input", argv[i]))) {
+            CHECK_RES(sscanf(argv[i + 1], "%s", strval));
+            strcpy(mix2mono_conf->ifile, strval);
+            i++;
+            continue;
+        }
+
         if (!(strcmp("-o", argv[i])) || !(strcmp("--output", argv[i]))) {
             CHECK_RES(sscanf(argv[i + 1], "%s", strval));
             strcpy(mix2mono_conf->ofile, strval);
@@ -102,7 +109,7 @@ char* get_sndfile_subtype(SF_INFO* sf_info) {
     return "N/A";
 }
 
-void output_info(SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf) {
+int output_file_info(SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf) {
     if (mix2mono_conf->info_flag) {
         fprintf(stdout, "\n\t\t---FILE INFO---\n");
         fprintf(stdout, "\tFile Name: %s\n", mix2mono_conf->ifile);
@@ -116,6 +123,8 @@ void output_info(SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf) {
         fprintf(stdout, "\tSubtype: %s\n", get_sndfile_subtype(sf_info));
         fprintf(stdout, "\t\t---------------\n\n");
     }
+
+    return 0;
 }
 
 int mix2mono(SF_INFO* sf_info, double* x, double** x_mono) {
@@ -134,14 +143,8 @@ int mix2mono(SF_INFO* sf_info, double* x, double** x_mono) {
 
 int write_file(SNDFILE** file, SF_INFO* sf_info, double* x_mono, mix2mono_config_t* mix2mono_conf) {
 
-    SF_INFO osf_info;
-
-    osf_info.format = sf_info->format;
-    osf_info.frames = sf_info->frames;
+    SF_INFO osf_info = *sf_info;
     osf_info.channels = 1;
-    osf_info.samplerate = sf_info->samplerate;
-    osf_info.seekable = sf_info->seekable;
-    osf_info.sections = sf_info->sections;
 
     *file = sf_open(mix2mono_conf->ofile, SFM_WRITE, &osf_info);
     if(!(*file)) {
@@ -160,8 +163,15 @@ int write_file(SNDFILE** file, SF_INFO* sf_info, double* x_mono, mix2mono_config
     return 0;
 }
 
-void output_help() {
+int output_help() {
 
+    printf("Mix2Mono options,\n\n");
+    printf("Basic usage, `mix2mono <audio file>`.\n");
+    printf("\n\t-i,\t--input <file>\t= Path or name of the input file.");
+    printf("\n\t-o,\t--output <file>\t= Path or name of the output file.");
+    printf("\n\t\t--info\t\t= Output to stdout some info about the input file.");
+
+    return 0;
 }
 
 uint32_t snd_format_arr[SND_MAJOR_FORMAT_NUM] = {

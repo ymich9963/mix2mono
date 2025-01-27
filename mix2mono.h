@@ -4,8 +4,8 @@
 #include <math.h>
 
 #define MAX_STR 30
-#define WELCOME_STR ""
-#define VERSION_STR ""
+#define WELCOME_STR "Mix2Mono by Yiannis Michael (ymich9963), 2025. \n\n Basic usage, `mix2mono <audio file>`. Use the `--help` option for details on the few options in the tool. "
+#define VERSION_STR "Mix2Mono v1.0.0, by Yiannis Michael (ymich9963), 2025."
 #define SND_MAJOR_FORMAT_NUM 27
 #define SND_SUBTYPE_NUM 36
 
@@ -49,6 +49,6 @@ int read_file_data(SNDFILE* file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_
 int mix2mono(SF_INFO* sf_info, double* x, double** x_mono);
 char* get_sndfile_major_format(SF_INFO* sf_info);
 char* get_sndfile_subtype(SF_INFO* sf_info);
-void output_info(SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf);
+int output_file_info(SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf);
 int write_file(SNDFILE** file, SF_INFO* sf_info, double* x_mono, mix2mono_config_t* mix2mono_conf);
-void output_help();
+int output_help();

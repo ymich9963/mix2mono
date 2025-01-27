@@ -1,8 +1,9 @@
 #include "mix2mono.h"
 
-//TODO: Make the outputted file be the same format as the input. Don't make this into a conversion tool.
+//TODO: Test different formats and encodings. Works with WAVE.
 
 int main (int argc, char** argv) {
+    printf("\n\t\t-Mix2Mono-\n");
     SF_INFO sf_info;        // File info
 
     mix2mono_config_t mix2mono_conf; // Tool config
@@ -20,14 +21,14 @@ int main (int argc, char** argv) {
     CHECK_ERR(open_file(&file, &sf_info, &mix2mono_conf));
 
     /* Output info on the inputted file */
-    output_info(&sf_info, &mix2mono_conf);
+    output_file_info(&sf_info, &mix2mono_conf);
 
     double* x = NULL;              // Data from audio file, considered the input signal
     CHECK_ERR(read_file_data(file, &sf_info, &mix2mono_conf, &x));
     printf("\tRead file data succesfully.\n");
 
     double* x_mono = NULL;         // Var to store the mono data
-    mix2mono(&sf_info, x, &x_mono, &mix2mono_conf);
+    mix2mono(&sf_info, x, &x_mono);
     printf("\tMixed file to mono.\n");
 
     SNDFILE* ofile = NULL;        // Output file pointer
