@@ -3,6 +3,7 @@ UNITY_DIR = unity/
 SRC_DIR = ../
 RESULTS_DIR = results/
 TEST_DIR = ./
+LIB := -lsndfile
 
 ifndef VERBOSE
 .SILENT:
@@ -17,8 +18,8 @@ endif
 .DELETE_ON_ERROR:
 
 CC := clang 
-test: CFLAGS := -Wall  -I$(SRC_DIR) -I$(UNITY_DIR) -I$(TEST_DIR) -O3
-coverage: CFLAGS := -Wall  -I$(SRC_DIR) -I$(UNITY_DIR) -I$(TEST_DIR) -O3 --coverage
+test: CFLAGS := -Wall  -I$(SRC_DIR) -I$(UNITY_DIR) -I$(TEST_DIR) -O3 $(LIB)
+coverage: CFLAGS := -Wall  -I$(SRC_DIR) -I$(UNITY_DIR) -I$(TEST_DIR) -O3 $(LIB) --coverage
 
 TEST_OBJ = $(patsubst Test%.c,Test%.o, $(wildcard *.c))
 TEST_EXE = $(patsubst Test%.c,Test%.exe, $(wildcard *.c))

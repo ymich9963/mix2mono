@@ -1,19 +1,14 @@
 #include "mix2mono.h"
 
-void set_defaults(mix2mono_config_t* mix2mono_conf) {
-    strcpy(mix2mono_conf->ofile, "mix2mono.wav");
-}
-
-int get_options(int* restrict argc, char** restrict argv, mix2mono_config_t* restrict mix2mono_conf) {
-    char strval[MAX_STR];
-
-    if (*argc == 1) {
+int get_options(int argc, char** restrict argv, mix2mono_config_t* restrict mix2mono_conf)
+{
+    if (argc == 1) {
         fprintf(stdout, WELCOME_STR);
 
         return 1;
     }
 
-    if (*argc == 2) {
+    if (argc == 2) {
         if (!(strcmp("--version", argv[1]))) {
             fprintf(stdout, VERSION_STR);
 
@@ -27,23 +22,23 @@ int get_options(int* restrict argc, char** restrict argv, mix2mono_config_t* res
         }
     }
 
-    for (int i = 1; i < *argc; i++) {
+    for (int i = 1; i < argc; i++) {
         if (argv[i][0] != '-' && argv[i - 1][0] != '-') {
-            CHECK_RES(sscanf(argv[i], "%s", strval));
-            strcpy(mix2mono_conf->ifile, strval);
+            CHECK_STR_LEN(argv[i], MIN_STR);
+            strcpy(mix2mono_conf->ifile, argv[i]);
             continue;
         }
 
         if (!(strcmp("-i", argv[i])) || !(strcmp("--input", argv[i]))) {
-            CHECK_RES(sscanf(argv[i + 1], "%s", strval));
-            strcpy(mix2mono_conf->ifile, strval);
+            CHECK_STR_LEN(argv[i + 1], MIN_STR);
+            strcpy(mix2mono_conf->ifile, argv[i + 1]);
             i++;
             continue;
         }
 
         if (!(strcmp("-o", argv[i])) || !(strcmp("--output", argv[i]))) {
-            CHECK_RES(sscanf(argv[i + 1], "%s", strval));
-            strcpy(mix2mono_conf->ofile, strval);
+            CHECK_STR_LEN(argv[i + 1], MAX_STR);
+            strcpy(mix2mono_conf->ofile, argv[i + 1]);
             i++;
             continue;
         }
@@ -60,22 +55,23 @@ int get_options(int* restrict argc, char** restrict argv, mix2mono_config_t* res
     return 0;
 }
 
-int open_file(SNDFILE** file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf) {
-
+int open_file(SNDFILE** file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf)
+{
     *file = sf_open(mix2mono_conf->ifile, SFM_READ, sf_info);
     if(!(*file)) {
-        fprintf(stderr, "\nSNDFile Error: %s.\n\n", sf_strerror(*file));
+        fprintf(stderr, "\nError with opening input file: %s", sf_strerror(*file));
 
         return 1;
     };
     return 0;
 }
 
-int read_file_data(SNDFILE* file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf, double** x) {
+int read_file_data(SNDFILE* file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf, double** x)
+{
     *x = calloc(sf_info->frames * sf_info->channels, sizeof(double));
     sf_count_t sf_count = sf_readf_double(file, *x, sf_info->frames);
     if (sf_count != sf_info->frames) {
-        fprintf(stderr, "\nRead count not equal to requested frames, %lld != %lld.\n\n", sf_count, sf_info->frames);
+        fprintf(stderr, "\nRead count not equal to requested frames, %lld != %lld.\n", sf_count, sf_info->frames);
 
         return 1;
     }
@@ -83,7 +79,8 @@ int read_file_data(SNDFILE* file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_
     return 0;
 }
 
-char* get_sndfile_major_format(SF_INFO* sf_info) {
+char* get_sndfile_major_format(SF_INFO* restrict sf_info)
+{
     const uint32_t format_mask = 0x00FF0000;
     const uint32_t major_format = sf_info->format & format_mask;
 
@@ -96,7 +93,8 @@ char* get_sndfile_major_format(SF_INFO* sf_info) {
     return "N/A";
 }
 
-char* get_sndfile_subtype(SF_INFO* sf_info) {
+char* get_sndfile_subtype(SF_INFO* restrict sf_info)
+{
     const uint16_t subtype_mask = 0x00FF;
     const uint16_t subtype = sf_info->format & subtype_mask;
 
@@ -109,7 +107,37 @@ char* get_sndfile_subtype(SF_INFO* sf_info) {
     return "N/A";
 }
 
-int output_file_info(SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf) {
+char* get_datetime_string()
+{
+    time_t time_since_epoch = time(NULL);
+    struct tm* tm = localtime(&time_since_epoch);
+    static char s[13];
+    strftime(s, sizeof(s), "%d%m%y%H%M%S", tm);
+
+    return s;
+}
+
+
+void generate_file_name(char* ofile, char* ifile)
+{
+    char ifile_no_extension[MIN_STR];
+
+    /* Remove the extension in the input file name */
+    strncpy(ifile_no_extension, ifile, strlen(ifile) - 4);
+
+    /* Fix an issue when the copied string is not terminated correctly */
+    ifile_no_extension[strlen(ifile) - 4] = '\0';
+
+    /* Remove the path specifier */
+    if (ifile_no_extension[0] == '.' && ifile_no_extension[1] == '\\') {
+        memmove(ifile_no_extension, ifile_no_extension + 2, MIN_STR);
+    }
+
+    sprintf(ofile, "mix2mono-%s-%s.wav", ifile_no_extension, get_datetime_string()); 
+}
+
+int output_file_info(SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf)
+{
     if (mix2mono_conf->info_flag) {
         fprintf(stdout, "\n\t\t---FILE INFO---\n");
         fprintf(stdout, "\tFile Name: %s\n", mix2mono_conf->ifile);
@@ -127,13 +155,11 @@ int output_file_info(SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf) {
     return 0;
 }
 
-int mix2mono(SF_INFO* sf_info, double* x, double** x_mono) {
-
+int mix2mono(SF_INFO* sf_info, double* x, double** x_mono)
+{
     *x_mono = calloc(sf_info->frames, sizeof(double));
-    uint64_t i = 0;
-    uint16_t c = 0;
-    for (i = 0; i < sf_info->frames; i++) {
-        for (c = 0; c < sf_info->channels; c++) {
+    for (uint64_t i = 0; i < sf_info->frames; i++) {
+        for (uint16_t c = 0; c < sf_info->channels; c++) {
             (*x_mono)[i] += (x[sf_info->channels * i + c]/sf_info->channels);
         }
     }
@@ -141,35 +167,35 @@ int mix2mono(SF_INFO* sf_info, double* x, double** x_mono) {
     return 0;
 }
 
-int write_file(SNDFILE** file, SF_INFO* sf_info, double* x_mono, mix2mono_config_t* mix2mono_conf) {
-
+int write_file(SNDFILE** file, SF_INFO* sf_info, double* x_mono, mix2mono_config_t* mix2mono_conf)
+{
     SF_INFO osf_info = *sf_info;
     osf_info.channels = 1;
 
     *file = sf_open(mix2mono_conf->ofile, SFM_WRITE, &osf_info);
     if(!(*file)) {
-        fprintf(stderr, "\nSNDFile Error: %s.\n\n", sf_strerror(*file));
+        fprintf(stderr, "\nError with writing to file: %s\n", sf_strerror(*file));
 
         return 1;
     };
 
-    sf_count_t sf_count = sf_write_double(*file, x_mono, sf_info->frames);
-    if (sf_count != sf_info->frames) {
-        fprintf(stderr, "\nRead count not equal to requested frames, %lld != %lld.\n\n", sf_count, sf_info->frames);
-
-        return 1;
-    }
+    osf_info.frames = sf_info->frames;
+    sf_write_double(*file, x_mono, osf_info.frames);
 
     return 0;
 }
 
-int output_help() {
-
-    printf("Mix2Mono options,\n\n");
-    printf("Basic usage, `mix2mono <audio file>`.\n");
-    printf("\n\t-i,\t--input <file>\t= Path or name of the input file.");
-    printf("\n\t-o,\t--output <file>\t= Path or name of the output file.");
-    printf("\n\t\t--info\t\t= Output to stdout some info about the input file.");
+int output_help()
+{
+    printf( 
+            "Mix2Mono options,\n\n"
+            "Basic usage, `mix2mono <audio file>`.\n"
+            "\n\t-i,\t--input <file>\t= Path or name of the input file."
+            "\n\t-o,\t--output <file>\t= Path or name of the output file."
+            "\n\t\t--info\t\t= Output to stdout some info about the input file."
+            "\n\t\t--version\t= Output version number."
+            "\n"
+          );
 
     return 0;
 }
