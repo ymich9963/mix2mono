@@ -1,4 +1,10 @@
-# Mix2Mono - Single Channel Files
+![badge](https://badgen.net/badge/Coverage/100/blue) 
+<a href="https://scan.coverity.com/projects/ymich9963-mix2mono">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/31713/badge.svg"/>
+</a>
+
+# Mix2Mono - Multi-channel to Single-channel Audio Files
 Originally created to be used internally within my [Discrete Fourier Transform Tool](https://github.com/ymich9963/mix2mono) but ended up being something useful as a standalone tool. Reason for making this is that single channel data is easier to process.
 
 ## Installing

@@ -130,7 +130,7 @@ void generate_file_name(char* ofile, char* ifile)
 
     /* Remove the path specifier */
     if (ifile_no_extension[0] == '.' && ifile_no_extension[1] == '\\') {
-        memmove(ifile_no_extension, ifile_no_extension + 2, MIN_STR);
+        memmove(ifile_no_extension, ifile_no_extension + 2, MIN_STR - 2);
     }
 
     sprintf(ofile, "mix2mono-%s-%s.wav", ifile_no_extension, get_datetime_string()); 
