@@ -50,14 +50,101 @@ typedef struct Mix2Mono_Config {
     uint8_t info_flag;
 } mix2mono_config_t;
 
+/**
+ * @brief Get the options from the CLI input.
+ *
+ * @param argc Number of arguments.
+ * @param argv Arguments.
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @return Success or failure.
+ */
 int get_options(int argc, char** argv, mix2mono_config_t* mix2mono_conf);
+
+/**
+ * @brief Open the audio file.
+ *
+ * @param file Pointer to empty SNDFILE variable.
+ * @param sf_info Pointer to empty SF_INFO variable.
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @return Success or failure.
+ */
 int open_file(SNDFILE** file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf);
+
+/**
+ * @brief Read the file data in double format.
+ *
+ * @param file Pointer to SNDFILE variable pointing to an actual file stream.
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @param x Data pointer.
+ * @return Success or failure.
+ */
 int read_file_data(SNDFILE* file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf, double** x);
+
+/**
+ * @brief The main guy that mixes it all to mono.
+ *
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ * @param x Data pointer.
+ * @param x_mono Pointer to store the mono data.
+ * @return Success or failure.
+ */
 int mix2mono(SF_INFO* sf_info, double* x, double** x_mono);
+
+/**
+ * @brief Generate the output file name based on the input file name and date/time.
+ *
+ * @param ofile Output file name string.
+ * @param ifile Input file name string.
+ */
 void generate_file_name(char* ofile, char* ifile);
+
+/**
+ * @brief Get the SNDFILE major format string. Same as descriptions given in the documentation.
+ *
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ * @return Major format string
+ */
 char* get_sndfile_major_format(SF_INFO* sf_info);
+
+/**
+ * @brief Get the SNDFILE subtype string. Same as subtypes given in the documentation.
+ *
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ * @return Subtype string.
+ */
 char* get_sndfile_subtype(SF_INFO* sf_info);
+
+/**
+ * @brief Get a date/time string formatted in ddmmyyHHMMSS.
+ *
+ * @return Date/time string.
+ */
 char* get_datetime_string();
+
+/**
+ * @brief Output the input file info to stdout. Specified with --info.
+ *
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @return Success or failure.
+ */
 int output_file_info(SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf);
+
+/**
+ * @brief Write the mono data to a .wav file.
+ *
+ * @param file Pointer to SNDFILE variable pointing to an actual file stream.
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ * @param x_mono Mono data pointer.
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @return Success or failure.
+ */
 int write_file(SNDFILE** file, SF_INFO* sf_info, double* x_mono, mix2mono_config_t* mix2mono_conf);
+
+/**
+ * @brief Output the mix2mono --help option.
+ *
+ * @return Success or failure.
+ */
 int output_help();
