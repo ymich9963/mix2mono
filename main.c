@@ -1,7 +1,6 @@
 #include "mix2mono.h"
 
 //TODO: Test different formats and encodings. Works with WAVE.
-//TODO: Make it preserve the extension of the input file.
 //FIX: Does not like paths as file inputs
 
 int main (int argc, char** argv) {
