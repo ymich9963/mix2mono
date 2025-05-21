@@ -37,11 +37,6 @@
                     }\
                 })
 
-extern char* snd_subtype_arr_desc[SND_SUBTYPE_NUM];
-extern uint32_t snd_subtype_arr[SND_SUBTYPE_NUM];
-extern char* snd_format_arr_desc[SND_MAJOR_FORMAT_NUM];
-extern uint32_t snd_format_arr[SND_MAJOR_FORMAT_NUM];
-
 typedef struct Mix2Mono_Config mix2mono_config_t;
 
 typedef struct Mix2Mono_Config {
