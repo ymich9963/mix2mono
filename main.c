@@ -2,13 +2,13 @@
 
 //TODO: Test different formats and encodings. Works with WAVE.
 //TODO: Make it preserve the extension of the input file.
-//TODO: Preserve the data encoding like it's done in ADX.
+//FIX: Does not like paths as file inputs
 
 int main (int argc, char** argv) {
     SF_INFO sf_info;        // File info
     SNDFILE* file;          // Pointer to file
-    double* x;              // Data from audio file, considered the input signal
-    double* x_mono;         // Var to store the mono data
+    void* x;                // Data from audio file, considered the input signal
+    void* x_mono;         // Var to store the mono data
     SNDFILE* ofile;         // Output file pointer
     mix2mono_config_t mix2mono_conf; // Tool config
 
@@ -25,20 +25,23 @@ int main (int argc, char** argv) {
     file = NULL;
     CHECK_ERR(open_file(&file, &sf_info, &mix2mono_conf));
 
+    /* Auto detect the input file format/encoding and match that */
+    set_settings_auto(&mix2mono_conf, &sf_info);
+
     /* Output info on the inputted file */
     output_file_info(&sf_info, &mix2mono_conf);
 
     /* Initialise input data array and read the file data */
     x = NULL;
-    CHECK_ERR(read_file_data(file, &sf_info, &mix2mono_conf, &x));
+    CHECK_ERR(read_file_data_raw(&mix2mono_conf, file, &sf_info, &x));
     printf("Read file data succesfully.\n");
 
     /* Initialise mono array and convert file data to mono */
     x_mono = NULL;
-    mix2mono(&sf_info, x, &x_mono);
+    mix2mono_conf.mix2mono(mix2mono_conf.file_size, sf_info.channels, x, &x_mono);
     printf("Mixed file to mono.\n");
 
-    generate_file_name(mix2mono_conf.ofile, mix2mono_conf.ifile);
+    generate_file_name(&sf_info, mix2mono_conf.ofile, mix2mono_conf.ifile);
 
     /* Initialise output file buffer and write to file */ 
     ofile = NULL;

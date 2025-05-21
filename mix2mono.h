@@ -5,7 +5,8 @@
 #include <time.h>
 
 #define MIN_STR 255
-#define MAX_STR 22 + MIN_STR
+#define MAX_STR 22 + MIN_STR + EXTENSION_STR
+#define EXTENSION_STR 7
 #define WELCOME_STR "Mix2Mono by Yiannis Michael (ymich9963), 2025. \n\n Basic usage, `mix2mono <Audio File>`. Use the `--help` option for details on the few options in the tool, and '--version' for version information.\n\n"
 #define VERSION_STR "\nMix2Mono v0.0.2, by Yiannis Michael (ymich9963), 2025.\n\n"
 #define SND_MAJOR_FORMAT_NUM 27
@@ -43,6 +44,10 @@ typedef struct Mix2Mono_Config {
     char ifile[MIN_STR];
     char ofile[MAX_STR];
     uint8_t info_flag;
+    size_t file_size;
+    uint8_t data_size;
+
+    void (*mix2mono)(size_t size, int channels, void* x, void** x_mono);
 } mix2mono_config_t;
 
 /**
@@ -68,13 +73,27 @@ int open_file(SNDFILE** file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf
 /**
  * @brief Read the file data in double format.
  *
- * @param file Pointer to SNDFILE variable pointing to an actual file stream.
- * @param sf_info Pointer to SF_INFO variable containing file information.
  * @param mix2mono_conf Mix2Mono configuration struct.
- * @param x Data pointer.
+ * @param sndfile Pointer to SNDFILE variable pointing to an actual file stream.
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ * @param x Adress of data buffer.
  * @return Success or failure.
  */
-int read_file_data(SNDFILE* file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf, double** x);
+int read_file_data_raw(mix2mono_config_t* mix2mono_conf, SNDFILE* sndfile, SF_INFO* sf_info, void** x);
+
+void set_settings_auto(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+void set_settings_uint8(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+void set_settings_int8(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+void set_settings_short(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+void set_settings_int(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+void set_settings_float(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+void set_settings_double(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+void mix2mono_uint8(size_t size, int channels, void* x, void** x_mono);
+void mix2mono_int8(size_t size, int channels, void* x, void** x_mono);
+void mix2mono_short(size_t size, int channels, void* x, void** x_mono);
+void mix2mono_int(size_t size, int channels, void* x, void** x_mono);
+void mix2mono_float(size_t size, int channels, void* x, void** x_mono);
+void mix2mono_double(size_t size, int channels, void* x, void** x_mono);
 
 /**
  * @brief The main guy that mixes it all to mono.
@@ -89,10 +108,11 @@ int mix2mono(SF_INFO* sf_info, double* x, double** x_mono);
 /**
  * @brief Generate the output file name based on the input file name and date/time.
  *
+ * @param sf_info Pointer to SF_INFO variable containing file information.
  * @param ofile Output file name string.
  * @param ifile Input file name string.
  */
-void generate_file_name(char* ofile, char* ifile);
+void generate_file_name(SF_INFO* sf_info, char* ofile, char* ifile);
 
 /**
  * @brief Get the SNDFILE major format string. Same as descriptions given in the documentation.
@@ -109,6 +129,8 @@ const char* get_sndfile_major_format(SF_INFO* sf_info);
  * @return Subtype string.
  */
 const char* get_sndfile_subtype(SF_INFO* sf_info);
+
+const char* get_sndfile_extension(SF_INFO* sf_info);
 
 /**
  * @brief Get a date/time string formatted in ddmmyyHHMMSS.
@@ -135,7 +157,7 @@ int output_file_info(SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf);
  * @param mix2mono_conf Mix2Mono configuration struct.
  * @return Success or failure.
  */
-int write_file(SNDFILE** file, SF_INFO* sf_info, double* x_mono, mix2mono_config_t* mix2mono_conf);
+int write_file(SNDFILE** file, SF_INFO* sf_info, void* x_mono, mix2mono_config_t* mix2mono_conf);
 
 /**
  * @brief Output the mix2mono --help option.
