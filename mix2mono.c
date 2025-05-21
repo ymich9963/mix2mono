@@ -132,6 +132,11 @@ char* get_datetime_string()
 
 void generate_file_name(char* ofile, char* ifile)
 {
+    if (ofile[0] != '\0' ) {
+
+        return;
+    }
+
     char ifile_no_extension[MIN_STR];
 
     /* Remove the extension in the input file name */

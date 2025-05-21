@@ -2,6 +2,7 @@
 
 //TODO: Test different formats and encodings. Works with WAVE.
 //TODO: Make it preserve the extension of the input file.
+//TODO: Preserve the data encoding like it's done in ADX.
 
 int main (int argc, char** argv) {
     SF_INFO sf_info;        // File info
@@ -10,6 +11,9 @@ int main (int argc, char** argv) {
     double* x_mono;         // Var to store the mono data
     SNDFILE* ofile;         // Output file pointer
     mix2mono_config_t mix2mono_conf; // Tool config
+
+    /* Initialise the output file name */
+    memset(mix2mono_conf.ofile, '\0', MAX_STR);
 
     /* Initialise the struct */
     memset(&sf_info, 0, sizeof(SF_INFO));
