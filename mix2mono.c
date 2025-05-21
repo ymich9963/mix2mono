@@ -79,28 +79,40 @@ int read_file_data(SNDFILE* file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_
     return 0;
 }
 
-char* get_sndfile_major_format(SF_INFO* restrict sf_info)
+const char* get_sndfile_major_format(SF_INFO* sf_info)
 {
+    SF_FORMAT_INFO format_info ;
+    int k, count;
     const uint32_t format_mask = 0x00FF0000;
     const uint32_t major_format = sf_info->format & format_mask;
 
-    for (int i = 0; i < SND_MAJOR_FORMAT_NUM; i++) {
-        if (major_format == snd_format_arr[i]) {
-            return snd_format_arr_desc[i];
+    sf_command(NULL, SFC_GET_FORMAT_MAJOR_COUNT, &count, sizeof (int));
+
+    for (k = 0 ; k < count ; k++) {
+        format_info.format = k;
+        sf_command(NULL, SFC_GET_FORMAT_MAJOR, &format_info, sizeof(format_info));
+        if (major_format == format_info.format) {
+            return format_info.name;
         }
     }
 
     return "N/A";
 }
 
-char* get_sndfile_subtype(SF_INFO* restrict sf_info)
+const char* get_sndfile_subtype(SF_INFO* sf_info)
 {
+    SF_FORMAT_INFO format_info ;
+    int k, count;
     const uint16_t subtype_mask = 0x00FF;
     const uint16_t subtype = sf_info->format & subtype_mask;
 
-    for (int i = 0; i < SND_SUBTYPE_NUM; i++) {
-        if (subtype == snd_subtype_arr[i]) {
-            return snd_subtype_arr_desc[i];
+    sf_command(NULL, SFC_GET_FORMAT_SUBTYPE_COUNT, &count, sizeof (int));
+
+    for (k = 0 ; k < count ; k++) {
+        format_info.format = k;
+        sf_command(NULL, SFC_GET_FORMAT_SUBTYPE, &format_info, sizeof(format_info));
+        if (subtype == format_info.format) {
+            return format_info.name;
         }
     }
 

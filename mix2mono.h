@@ -105,7 +105,7 @@ void generate_file_name(char* ofile, char* ifile);
  * @param sf_info Pointer to SF_INFO variable containing file information.
  * @return Major format string
  */
-char* get_sndfile_major_format(SF_INFO* sf_info);
+const char* get_sndfile_major_format(SF_INFO* sf_info);
 
 /**
  * @brief Get the SNDFILE subtype string. Same as subtypes given in the documentation.
@@ -113,7 +113,7 @@ char* get_sndfile_major_format(SF_INFO* sf_info);
  * @param sf_info Pointer to SF_INFO variable containing file information.
  * @return Subtype string.
  */
-char* get_sndfile_subtype(SF_INFO* sf_info);
+const char* get_sndfile_subtype(SF_INFO* sf_info);
 
 /**
  * @brief Get a date/time string formatted in ddmmyyHHMMSS.
