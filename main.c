@@ -40,7 +40,8 @@ int main (int argc, char** argv) {
     mix2mono_conf.mix2mono(mix2mono_conf.file_size, sf_info.channels, x, &x_mono);
     printf("Mixed file to mono.\n");
 
-    generate_file_name(&sf_info, mix2mono_conf.ofile, mix2mono_conf.ifile);
+    const char* extension = get_input_file_extension(&sf_info);
+    generate_file_name(extension, mix2mono_conf.ofile, mix2mono_conf.ifile);
 
     /* Initialise output file buffer and write to file */ 
     ofile = NULL;

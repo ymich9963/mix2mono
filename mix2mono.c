@@ -123,6 +123,7 @@ void set_settings_float(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* rest
 void set_settings_double(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* restrict sf_info)
 {
     mix2mono_conf->file_size = sf_info->frames * sf_info->channels;
+    printf("%lld", mix2mono_conf->file_size);
     mix2mono_conf->data_size = sizeof(double);
     mix2mono_conf->mix2mono = &mix2mono_double;
     fprintf(stdout,  "Detected data type 'double'.\n");
@@ -156,7 +157,6 @@ void set_settings_auto(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* restr
             break;
         default:
             fprintf(stderr, "Auto-format detection for the detected format is not implemented. Resorting to reading as double.\n");
-            printf("%x\n", subtype_mask);
             set_settings_double(mix2mono_conf, sf_info);
             break;
     }
@@ -232,7 +232,7 @@ char* get_datetime_string()
     return s;
 }
 
-void generate_file_name(SF_INFO* restrict sf_info, char* restrict ofile, char* restrict ifile)
+void generate_file_name(const char* restrict extension, char* restrict ofile, char* restrict ifile)
 {
     if (ofile[0] != '\0' ) {
 
@@ -240,7 +240,7 @@ void generate_file_name(SF_INFO* restrict sf_info, char* restrict ofile, char* r
     }
 
     char ifile_no_extension[MIN_STR];
-    size_t file_extension_size = strlen(get_input_file_extension(sf_info));
+    size_t file_extension_size = 1 + strlen(extension);
 
     /* Remove the extension in the input file name */
     strncpy(ifile_no_extension, ifile, strlen(ifile) - file_extension_size);
@@ -253,7 +253,7 @@ void generate_file_name(SF_INFO* restrict sf_info, char* restrict ofile, char* r
         memmove(ifile_no_extension, ifile_no_extension + 2, MIN_STR - 2);
     }
 
-    sprintf(ofile, "mix2mono-%s-%s.%s", ifile_no_extension, get_datetime_string(), get_input_file_extension(sf_info)); 
+    sprintf(ofile, "mix2mono-%s-%s.%s", ifile_no_extension, get_datetime_string(), extension); 
 }
 
 int output_file_info(SF_INFO* restrict sf_info, mix2mono_config_t* restrict mix2mono_conf)
@@ -277,60 +277,61 @@ int output_file_info(SF_INFO* restrict sf_info, mix2mono_config_t* restrict mix2
 
 void mix2mono_uint8(size_t size, int channels, void* x, void** x_mono)
 {
-    *x_mono = calloc(size, sizeof(uint8_t));
-    for (uint64_t i = 0; i < size; i++) {
+    *x_mono = calloc(size/channels, sizeof(uint8_t));
+    for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((uint8_t* )*x_mono)[i] += (((uint8_t* )x)[channels * i + c]/channels);
+            ((uint8_t*)*x_mono)[i] += (((uint8_t*)x)[channels * i + c]/channels);
         }
     }
 }
 
 void mix2mono_int8(size_t size, int channels, void* x, void** x_mono)
 {
-    *x_mono = calloc(size, sizeof(int8_t));
-    for (uint64_t i = 0; i < size; i++) {
+    *x_mono = calloc(size/channels, sizeof(int8_t));
+    for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((int8_t* )*x_mono)[i] += (((int8_t* )x)[channels * i + c]/channels);
+            ((int8_t*)*x_mono)[i] += (((int8_t*)x)[channels * i + c]/channels);
         }
     }
 }
 
 void mix2mono_short(size_t size, int channels, void* x, void** x_mono)
 {
-    *x_mono = calloc(size, sizeof(int16_t));
-    for (uint64_t i = 0; i < size; i++) {
+    *x_mono = calloc(size/channels, sizeof(int16_t));
+    for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((int16_t* )*x_mono)[i] += (((int16_t* )x)[channels * i + c]/channels);
+            ((int16_t*)*x_mono)[i] += (((int16_t*)x)[channels * i + c]/channels);
         }
     }
 }
 
 void mix2mono_int(size_t size, int channels, void* x, void** x_mono)
 {
-    *x_mono = calloc(size, sizeof(int32_t));
-    for (uint64_t i = 0; i < size; i++) {
+    *x_mono = calloc(size/channels, sizeof(int32_t));
+    for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((int32_t* )*x_mono)[i] += (((int32_t* )x)[channels * i + c]/channels);
+            ((int32_t*)*x_mono)[i] += (((int32_t*)x)[channels * i + c]/channels);
         }
     }
 }
 
 void mix2mono_float(size_t size, int channels, void* x, void** x_mono)
 {
-    *x_mono = calloc(size, sizeof(float));
-    for (uint64_t i = 0; i < size; i++) {
+    *x_mono = calloc(size/channels, sizeof(float));
+    for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((float* )*x_mono)[i] += (((float* )x)[channels * i + c]/channels);
+            ((float*)*x_mono)[i] += (((float*)x)[(i * channels) + c]/channels);
         }
     }
 }
 
 void mix2mono_double(size_t size, int channels, void* x, void** x_mono)
 {
-    *x_mono = calloc(size, sizeof(double));
-    for (uint64_t i = 0; i < size; i++) {
+    *x_mono = calloc(size/channels, sizeof(double));
+    for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((double* )*x_mono)[i] += (((double* )x)[channels * i + c]/channels);
+            ((double*)*x_mono)[i] = (((double*)x)[(i * channels) + c]/channels);
+            // printf("x_mono = %lf / %d [%llu * %d + %d]\n", ((double*)x)[(i * channels) + c], channels, i, channels, c);
         }
     }
 }

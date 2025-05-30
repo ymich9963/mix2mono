@@ -81,38 +81,130 @@ int open_file(SNDFILE** file, SF_INFO* sf_info, mix2mono_config_t* mix2mono_conf
  */
 int read_file_data_raw(mix2mono_config_t* mix2mono_conf, SNDFILE* sndfile, SF_INFO* sf_info, void** x);
 
+/**
+ * @brief Automatically sets the ADX configuration depending on the input file.
+ *
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ */
 void set_settings_auto(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+
+/**
+ * @brief Sets the ADX configuration to get the data as unsigned 8-bit integer.
+ *
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ */
 void set_settings_uint8(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+
+/**
+ * @brief Sets the ADX configuration to get the data as signed 8-bit integer.
+ *
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ */
 void set_settings_int8(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+
+/**
+ * @brief Sets the ADX configuration to get the data as signed 16-bit integer.
+ *
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ */
 void set_settings_short(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+
+/**
+ * @brief Sets the ADX configuration to get the data as signed 32-bit integer.
+ *
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ */
 void set_settings_int(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+
+/**
+ * @brief Sets the ADX configuration to get the data as a float.
+ *
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ */
 void set_settings_float(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+
+/**
+ * @brief Sets the ADX configuration to get the data as a double.
+ *
+ * @param mix2mono_conf Mix2Mono configuration struct.
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ */
 void set_settings_double(mix2mono_config_t* mix2mono_conf, SF_INFO* sf_info);
+
+/**
+ * @brief Mix to mono function for unsigned 8-bit integer type data.
+ *
+ * @param size Size of data.
+ * @param channels Number of channels in the input audio file.
+ * @param x Input data buffer.
+ * @param x_mono Output data buffer.
+ */
 void mix2mono_uint8(size_t size, int channels, void* x, void** x_mono);
+
+/**
+ * @brief Mix to mono function for signed 8-bit integer type data.
+ *
+ * @param size Size of data.
+ * @param channels Number of channels in the input audio file.
+ * @param x Input data buffer.
+ * @param x_mono Output data buffer.
+ */
 void mix2mono_int8(size_t size, int channels, void* x, void** x_mono);
+
+/**
+ * @brief Mix to mono function for signed 16-bit integer type data.
+ *
+ * @param size Size of data.
+ * @param channels Number of channels in the input audio file.
+ * @param x Input data buffer.
+ * @param x_mono Output data buffer.
+ */
 void mix2mono_short(size_t size, int channels, void* x, void** x_mono);
+
+/**
+ * @brief Mix to mono function for signed 32-bit integer type data.
+ *
+ * @param size Size of data.
+ * @param channels Number of channels in the input audio file.
+ * @param x Input data buffer.
+ * @param x_mono Output data buffer.
+ */
 void mix2mono_int(size_t size, int channels, void* x, void** x_mono);
+
+/**
+ * @brief Mix to mono function for float.
+ *
+ * @param size Size of data.
+ * @param channels Number of channels in the input audio file.
+ * @param x Input data buffer.
+ * @param x_mono Output data buffer.
+ */
 void mix2mono_float(size_t size, int channels, void* x, void** x_mono);
+
+/**
+ * @brief Mix to mono function for double.
+ *
+ * @param size Size of data.
+ * @param channels Number of channels in the input audio file.
+ * @param x Input data buffer.
+ * @param x_mono Output data buffer.
+ */
 void mix2mono_double(size_t size, int channels, void* x, void** x_mono);
 
 /**
- * @brief The main guy that mixes it all to mono.
+ * @brief Generate the output file name based on the input file name, extension and date/time.
  *
- * @param sf_info Pointer to SF_INFO variable containing file information.
- * @param x Data pointer.
- * @param x_mono Pointer to store the mono data.
- * @return Success or failure.
- */
-int mix2mono(SF_INFO* sf_info, double* x, double** x_mono);
-
-/**
- * @brief Generate the output file name based on the input file name and date/time.
- *
- * @param sf_info Pointer to SF_INFO variable containing file information.
+ * @param extension Extension of the input file name.
  * @param ofile Output file name string.
  * @param ifile Input file name string.
  */
-void generate_file_name(SF_INFO* sf_info, char* ofile, char* ifile);
+void generate_file_name(const char* extension, char* ofile, char* ifile);
 
 /**
  * @brief Get the SNDFILE major format string. Same as descriptions given in the documentation.
@@ -130,7 +222,13 @@ const char* get_sndfile_major_format(SF_INFO* sf_info);
  */
 const char* get_sndfile_subtype(SF_INFO* sf_info);
 
-const char* get_sndfile_extension(SF_INFO* sf_info);
+/**
+ * @brief Get the file extension using the libsndfile libraries.
+ *
+ * @param sf_info Pointer to SF_INFO variable containing file information.
+ * @return Subtype string.
+ */
+const char* get_input_file_extension(SF_INFO* sf_info);
 
 /**
  * @brief Get a date/time string formatted in ddmmyyHHMMSS.

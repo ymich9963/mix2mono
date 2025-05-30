@@ -98,19 +98,19 @@ void test_open_file() {
     TEST_ASSERT_EQUAL_INT(1, open_file(&sndfile, &sf_info, &mix2mono_conf));
 }
 
-void test_read_file_data() {
+void test_read_file_data_raw() {
     SNDFILE *sndfile;
     SF_INFO sf_info;
     mix2mono_config_t mix2mono_conf = {
         .ifile = "test.wav",
     };
-    double* x;
+    void* x;
     open_file(&sndfile, &sf_info, &mix2mono_conf);
 
-    TEST_ASSERT_EQUAL_INT(0, read_file_data(sndfile, &sf_info, &mix2mono_conf, &x));
+    TEST_ASSERT_EQUAL_INT(0, read_file_data_raw(&mix2mono_conf, sndfile, &sf_info, &x));
 
     sf_info.frames = 1;
-    TEST_ASSERT_EQUAL_INT(1, read_file_data(sndfile, &sf_info, &mix2mono_conf, &x));
+    TEST_ASSERT_EQUAL_INT(1, read_file_data_raw(&mix2mono_conf, sndfile, &sf_info, &x));
 }
 
 void test_get_sndfile_major_format() {
@@ -142,7 +142,7 @@ void test_get_datetime_string() {
 void test_generate_file_name() {
     char ofile[MAX_STR];
     char ifile[MIN_STR] = ".\\test.wav";
-    generate_file_name(ofile, ifile);
+    generate_file_name("wav", ofile, ifile);
 
     TEST_ASSERT_EQUAL_INT(0, strncmp(ofile, "mix2mono-test-", 14));
     TEST_ASSERT_EQUAL_INT(0, strncmp(strrev(ofile), "vaw.", 4));
@@ -155,14 +155,73 @@ void test_mix2mono() {
         .channels = 2,
     };
 
-    double x[] = {1,1,1,1,1,1,1,1};
-    double* x_mono;
+    // // uint8
+    // uint8_t x_uint8[] = {1,1,1,1,1,1,1,1};
+    // void* x_mono_uint8;
+    //
+    // mix2mono_uint8(8, 2, x_uint8, &x_mono_uint8);
+    //
+    // printf("%d", ((uint8_t*) x_mono_uint8)[0]);
+    //
+    // uint8_t result_uint8[] = {1,1,1,1};
+    // TEST_ASSERT_EQUAL_UINT8_ARRAY(result_uint8, ((uint8_t*)x_mono_uint8), sf_info.frames);
+    // TEST_ASSERT_NOT_EQUAL_INT(1, ((uint8_t*)x_mono_uint8)[5]);
+    //
+    // // int8
+    // int8_t x_int8[] = {1,1,1,1,1,1,1,1};
+    // void* x_mono_int8;
+    //
+    // mix2mono_int8(8, 2, x_int8, &x_mono_int8);
+    //
+    // int8_t result_int8[] = {1,1,1,1};
+    // TEST_ASSERT_EQUAL_INT_ARRAY(result_int8, x_mono_int8, sf_info.frames);
+    // TEST_ASSERT_NOT_EQUAL_INT(1, ((uint8_t*)x_mono_int8)[5]);
+    //
+    // // short/int16
+    // int16_t x_int16[] = {1,1,1,1,1,1,1,1};
+    // void* x_mono_int16;
+    //
+    // mix2mono_short(8, 2, x_int16, &x_mono_int16);
+    //
+    // int16_t result_int16[] = {1,1,1,1};
+    // TEST_ASSERT_EQUAL_INT_ARRAY(result_int16, x_mono_int16, sf_info.frames);
+    // TEST_ASSERT_NOT_EQUAL_INT(1, ((uint16_t*)x_mono_int16)[5]);
 
-    mix2mono(&sf_info, x, &x_mono);
+    // FIX: Doesn't work from here and below. Best to make a for loop with the type-specific tests
+    // I think this happens because the array is type void.
 
-    double result[] = {1,1,1,1};
-    TEST_ASSERT_EQUAL_INT_ARRAY(result, x_mono, sf_info.frames);
-    TEST_ASSERT_NOT_EQUAL_INT(1, x_mono[5]);
+    // int/int32
+    int x_int32[] = {1,1,1,1,1,1,1,1};
+    void* x_mono_int32;
+
+    mix2mono_int(8, 2, x_int32, &x_mono_int32);
+
+    int result_int32[] = {1,1,1,1};
+    for (int i = 0; i < 4; i++) {
+        TEST_ASSERT_EQUAL_INT(result_int32[i], ((int*)x_mono_int32)[i]);
+    }
+
+    TEST_ASSERT_NOT_EQUAL_INT(1, ((int32_t*)x_mono_int32)[5]);
+
+    // float
+    float x_float[] = {1,1,1,1,1,1,1,1};
+    void* x_mono_float;
+
+    mix2mono_float(8, 2, x_float, &x_mono_float);
+
+    float result_float[] = {1,1,1,1};
+    TEST_ASSERT_EQUAL_INT_ARRAY(result_float, x_mono_float, sf_info.frames);
+    TEST_ASSERT_NOT_EQUAL_INT(1, ((float*)x_mono_float)[5]);
+
+    // double
+    double x_double[] = {1,1,1,1,1,1,1,1};
+    void* x_mono_double;
+
+    mix2mono_double(8, 2, x_double, &x_mono_double);
+
+    double result_double[] = {1,1,1,1};
+    TEST_ASSERT_EQUAL_INT_ARRAY(result_double, x_mono_double, sf_info.frames);
+    TEST_ASSERT_NOT_EQUAL_INT(1, ((double*)x_mono_double)[5]);
 }
 
 void test_write_file() {
@@ -190,7 +249,7 @@ int main() {
     RUN_TEST(test_output_file_info);
     RUN_TEST(test_get_options);
     RUN_TEST(test_open_file);
-    RUN_TEST(test_read_file_data);
+    RUN_TEST(test_read_file_data_raw);
     RUN_TEST(test_get_sndfile_major_format);
     RUN_TEST(test_get_sndfile_subtype);
     RUN_TEST(test_get_datetime_string);
