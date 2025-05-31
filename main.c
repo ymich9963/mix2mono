@@ -37,7 +37,7 @@ int main (int argc, char** argv) {
 
     /* Initialise mono array and convert file data to mono */
     x_mono = NULL;
-    mix2mono_conf.mix2mono(mix2mono_conf.file_size, sf_info.channels, x, &x_mono);
+    mix2mono_conf.mix2mono(mix2mono_conf.input_file_size, sf_info.channels, x, &x_mono);
     printf("Mixed file to mono.\n");
 
     const char* extension = get_input_file_extension(&sf_info);

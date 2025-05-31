@@ -8,7 +8,7 @@
 #define MAX_STR 22 + MIN_STR + EXTENSION_STR
 #define EXTENSION_STR 7
 #define WELCOME_STR "Mix2Mono by Yiannis Michael (ymich9963), 2025. \n\n Basic usage, `mix2mono <Audio File>`. Use the `--help` option for details on the few options in the tool, and '--version' for version information.\n\n"
-#define VERSION_STR "\nMix2Mono v0.0.2, by Yiannis Michael (ymich9963), 2025.\n\n"
+#define VERSION_STR "\nMix2Mono v0.1.0, by Yiannis Michael (ymich9963), 2025.\n\n"
 #define SND_MAJOR_FORMAT_NUM 27
 #define SND_SUBTYPE_NUM 36
 
@@ -44,7 +44,7 @@ typedef struct Mix2Mono_Config {
     char ifile[MIN_STR];
     char ofile[MAX_STR];
     uint8_t info_flag;
-    size_t file_size;
+    size_t input_file_size;
     uint8_t data_size;
 
     void (*mix2mono)(size_t size, int channels, void* x, void** x_mono);

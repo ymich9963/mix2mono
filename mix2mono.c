@@ -66,22 +66,9 @@ int open_file(SNDFILE** restrict file, SF_INFO* restrict sf_info, mix2mono_confi
     return 0;
 }
 
-int read_file_data_raw(mix2mono_config_t* restrict mix2mono_conf, SNDFILE* restrict sndfile, SF_INFO* restrict sf_info, void** x)
-{
-    *x = calloc(mix2mono_conf->file_size, mix2mono_conf->data_size);
-    sf_count_t sf_count = sf_read_raw(sndfile, *x, sf_info->frames);
-    if (sf_count != sf_info->frames) {
-        fprintf(stderr, "\nRead count not equal to requested frames, %lld != %lld.\n", sf_count, sf_info->frames);
-
-        return 1;
-    }
-
-    return 0;
-}
-
 void set_settings_uint8(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* restrict sf_info)
 {
-    mix2mono_conf->file_size = sf_info->frames * sf_info->channels;
+    mix2mono_conf->input_file_size = sf_info->frames * sf_info->channels;
     mix2mono_conf->data_size = sizeof(uint8_t);
     mix2mono_conf->mix2mono = &mix2mono_uint8;
     fprintf(stdout,  "Detected data type 'uint8'.\n");
@@ -89,7 +76,7 @@ void set_settings_uint8(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* rest
 
 void set_settings_int8(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* restrict sf_info)
 {
-    mix2mono_conf->file_size = sf_info->frames * sf_info->channels;
+    mix2mono_conf->input_file_size = sf_info->frames * sf_info->channels;
     mix2mono_conf->data_size = sizeof(int8_t);
     mix2mono_conf->mix2mono = &mix2mono_int8;
     fprintf(stdout,  "Detected data type 'int8'.\n");
@@ -97,7 +84,7 @@ void set_settings_int8(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* restr
 
 void set_settings_short(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* restrict sf_info)
 {
-    mix2mono_conf->file_size = sf_info->frames * sf_info->channels;
+    mix2mono_conf->input_file_size = sf_info->frames * sf_info->channels;
     mix2mono_conf->data_size = sizeof(short);
     mix2mono_conf->mix2mono = &mix2mono_short;
     fprintf(stdout,  "Detected data type 'short'.\n");
@@ -105,7 +92,7 @@ void set_settings_short(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* rest
 
 void set_settings_int(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* restrict sf_info)
 {
-    mix2mono_conf->file_size = sf_info->frames * sf_info->channels;
+    mix2mono_conf->input_file_size = sf_info->frames * sf_info->channels;
     mix2mono_conf->data_size = sizeof(int);
     mix2mono_conf->mix2mono = &mix2mono_int;
     fprintf(stdout,  "Detected data type 'int'.\n");
@@ -113,7 +100,7 @@ void set_settings_int(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* restri
 
 void set_settings_float(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* restrict sf_info)
 {
-    mix2mono_conf->file_size = sf_info->frames * sf_info->channels;
+    mix2mono_conf->input_file_size = sf_info->frames * sf_info->channels;
     mix2mono_conf->data_size = sizeof(float);
     mix2mono_conf->mix2mono = &mix2mono_float;
     fprintf(stdout,  "Detected data type 'float'.\n");
@@ -122,8 +109,7 @@ void set_settings_float(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* rest
 
 void set_settings_double(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* restrict sf_info)
 {
-    mix2mono_conf->file_size = sf_info->frames * sf_info->channels;
-    printf("%lld", mix2mono_conf->file_size);
+    mix2mono_conf->input_file_size = sf_info->frames * sf_info->channels;
     mix2mono_conf->data_size = sizeof(double);
     mix2mono_conf->mix2mono = &mix2mono_double;
     fprintf(stdout,  "Detected data type 'double'.\n");
@@ -160,6 +146,19 @@ void set_settings_auto(mix2mono_config_t* restrict mix2mono_conf, SF_INFO* restr
             set_settings_double(mix2mono_conf, sf_info);
             break;
     }
+}
+
+int read_file_data_raw(mix2mono_config_t* restrict mix2mono_conf, SNDFILE* restrict sndfile, SF_INFO* restrict sf_info, void** x)
+{
+    *x = malloc(mix2mono_conf->input_file_size * mix2mono_conf->data_size);
+    sf_count_t sf_count = sf_read_raw(sndfile, *x, mix2mono_conf->input_file_size * mix2mono_conf->data_size);
+    if (sf_count != mix2mono_conf->input_file_size * mix2mono_conf->data_size) {
+        fprintf(stderr, "\nRead count not equal to requested frames, %lld != %lld.\n", sf_count, mix2mono_conf->input_file_size * mix2mono_conf->data_size);
+
+        return 1;
+    }
+
+    return 0;
 }
 
 const char* get_sndfile_major_format(SF_INFO* restrict sf_info)
@@ -219,7 +218,7 @@ const char* get_input_file_extension(SF_INFO* restrict sf_info)
         }
     }
 
-    return ".wav";
+    return "wav";
 }
 
 char* get_datetime_string()
@@ -280,7 +279,7 @@ void mix2mono_uint8(size_t size, int channels, void* x, void** x_mono)
     *x_mono = calloc(size/channels, sizeof(uint8_t));
     for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((uint8_t*)*x_mono)[i] += (((uint8_t*)x)[channels * i + c]/channels);
+            ((uint8_t*)*x_mono)[i] += (((uint8_t*)x)[i * channels + c]/channels);
         }
     }
 }
@@ -290,7 +289,7 @@ void mix2mono_int8(size_t size, int channels, void* x, void** x_mono)
     *x_mono = calloc(size/channels, sizeof(int8_t));
     for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((int8_t*)*x_mono)[i] += (((int8_t*)x)[channels * i + c]/channels);
+            ((int8_t*)*x_mono)[i] += (((int8_t*)x)[i * channels + c]/channels);
         }
     }
 }
@@ -300,7 +299,7 @@ void mix2mono_short(size_t size, int channels, void* x, void** x_mono)
     *x_mono = calloc(size/channels, sizeof(int16_t));
     for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((int16_t*)*x_mono)[i] += (((int16_t*)x)[channels * i + c]/channels);
+            ((int16_t*)*x_mono)[i] += (((int16_t*)x)[i * channels + c]/channels);
         }
     }
 }
@@ -310,7 +309,7 @@ void mix2mono_int(size_t size, int channels, void* x, void** x_mono)
     *x_mono = calloc(size/channels, sizeof(int32_t));
     for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((int32_t*)*x_mono)[i] += (((int32_t*)x)[channels * i + c]/channels);
+            ((int32_t*)*x_mono)[i] += (((int32_t*)x)[i * channels + c]/channels);
         }
     }
 }
@@ -320,7 +319,7 @@ void mix2mono_float(size_t size, int channels, void* x, void** x_mono)
     *x_mono = calloc(size/channels, sizeof(float));
     for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((float*)*x_mono)[i] += (((float*)x)[(i * channels) + c]/channels);
+            ((float*)*x_mono)[i] += (((float*)x)[i * channels + c]/channels);
         }
     }
 }
@@ -330,8 +329,7 @@ void mix2mono_double(size_t size, int channels, void* x, void** x_mono)
     *x_mono = calloc(size/channels, sizeof(double));
     for (uint64_t i = 0; i < size/channels; i++) {
         for (uint16_t c = 0; c < channels; c++) {
-            ((double*)*x_mono)[i] = (((double*)x)[(i * channels) + c]/channels);
-            // printf("x_mono = %lf / %d [%llu * %d + %d]\n", ((double*)x)[(i * channels) + c], channels, i, channels, c);
+            ((double*)*x_mono)[i] += (((double*)x)[i * channels + c]/channels);
         }
     }
 }
@@ -350,7 +348,7 @@ int write_file(SNDFILE** restrict file, SF_INFO* restrict sf_info, void* restric
     };
 
     osf_info.frames = sf_info->frames;
-    sf_write_raw(*file, x_mono, osf_info.frames);
+    sf_write_raw(*file, x_mono, osf_info.frames * mix2mono_conf->data_size);
 
     return 0;
 }

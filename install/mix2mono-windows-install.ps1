@@ -1,5 +1,5 @@
 $MIX2MONO_install_path = 'C:\Program Files\mix2mono'
-$MIX2MONO_exe_link = "https://github.com/ymich9963/mix2mono/releases/download/v0.0.2/mix2mono.exe"
+$MIX2MONO_exe_link = "https://github.com/ymich9963/mix2mono/releases/download/v0.1.0/mix2mono.exe"
 
 if (Test-Path -Path $MIX2MONO_install_path) {
     Write-Output "Removing previously installed executable."
