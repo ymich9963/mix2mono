@@ -1,11 +1,19 @@
 # Mix2Mono - Multi-channel to Single-channel Audio Files
-![badge](https://badgen.net/badge/Coverage/100/blue) 
-<a href="https://scan.coverity.com/projects/ymich9963-mix2mono">
-<img alt="Coverity Scan Build Status"
-src="https://scan.coverity.com/projects/31713/badge.svg"/>
-</a>
+![badge](https://badgen.net/badge/Coverage/100/blue) ![coverity](https://scan.coverity.com/projects/31713/badge.svg)
 
-Originally created to be used internally within my [Discrete Fourier Transform Tool](https://github.com/ymich9963/mix2mono) but ended up being something useful as a standalone tool. Reason for making this is that single channel data is easier to process.
+Originally created to be used internally within my [Discrete Fourier Transform Tool](https://github.com/ymich9963/dftt) but ended up being something useful as a standalone tool. Reason for making this is that single channel data is easier to process in certain cases.
+
+To mix the multi-channel data into one channel, the equation below is used,
+
+$$
+x_{mono} = \sum_{n = 0}^{N}\sum_{c = 0}^{C} x_{in}[n * C + c] / C 
+$$
+
+where,
+- $x_{mono}$ is the output buffer with the mono data
+- $x_{in}$ is the input buffer of the inputted audio file.
+- $C$ is the number of channels present.
+- $N$ is the number of samples present in the input buffer.
 
 ## Installing
 Currently an automatic installation exists only for Windows, and binaries are built only for Windows. For other Operating Systems you need to build from source.
