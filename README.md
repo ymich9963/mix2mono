@@ -35,7 +35,7 @@ To use `mix2mono` it is done by executing,
 ```
 mix2mono <audio file>
 ```
-With optionally adding a `--info` flag for some more info about the audio file. Currently the tool only outputs .wav files. Preserving the input file type is in mind for a future release.
+With optionally adding a `--info` flag for some more info about the audio file.
 
 The `--help` option is listed below,
 ```
