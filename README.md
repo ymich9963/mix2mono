@@ -1,6 +1,8 @@
 # Mix2Mono - Multi-channel to Single-channel Audio Files
 ![badge](https://badgen.net/badge/Coverage/100/blue) ![coverity](https://scan.coverity.com/projects/31713/badge.svg)
 
+Mix your multi-channel audio file to a single-channel (mono) audio file. Mix2Mono also preserves the input file extension and encoding.
+
 Originally created to be used internally within my [Discrete Fourier Transform Tool](https://github.com/ymich9963/dftt) but ended up being something useful as a standalone tool. Reason for making this is that single channel data is easier to process in certain cases.
 
 To mix the multi-channel data into one channel, the equation below is used,
