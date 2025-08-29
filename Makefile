@@ -1,4 +1,4 @@
-TARGET := adx
+TARGET := mix2mono
 BUILD_DIR := ./build
 OBJECTS := main.o $(TARGET).o
 CFLAGS := -Wall -O3
